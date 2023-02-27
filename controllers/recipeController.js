@@ -1,7 +1,7 @@
 require('dotenv').config()
 const mongoose = require('mongoose')
 const Recipe = require('../models/Recipe')
-const { s3 } = require('../lib/aws')
+const { s3, cloudFront } = require('../lib/aws')
 const { getSignedUrl } = require('@aws-sdk/cloudfront-signer')
 
 
@@ -65,6 +65,8 @@ exports.updateRecipe = async(req, res, next) => {
     }
 }
 
+
+
 exports.deleteOne = async(req, res, next) => {
     try {   
         const recipe = await Recipe.findOneAndDelete({ _id: req.params.id })
@@ -73,8 +75,24 @@ exports.deleteOne = async(req, res, next) => {
             Bucket: process.env.S3_BUCKET,
             Key: `recipeImages/${recipe.image}`,
         }
-
         await s3.deleteObject(params).promise()
+
+        // const invalidateParams = {
+        //     DistributionId: process.env.DISTRIBUTION_ID,
+        //     InvalidationBatch: {
+        //         CallerReference: recipe.image,
+        //         Paths: {
+        //             Quantity: 1,
+        //             Items: [
+        //                 `/recipeImages/${recipe.image}`
+        //             ]
+        //         }
+        //     }
+        // }
+
+        // await cloudFront.createInvalidation(invalidateParams).promise()
+
+ 
         
         res.json(`${recipe.title} deleted.`)
 

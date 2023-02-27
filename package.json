@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.279.0",
     "@aws-sdk/cloudfront-signer": "^3.272.0",
     "aws-sdk": "^2.1248.0",
     "cors": "^2.8.5",

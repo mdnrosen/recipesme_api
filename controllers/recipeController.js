@@ -2,8 +2,7 @@ require('dotenv').config()
 const mongoose = require('mongoose')
 const Recipe = require('../models/Recipe')
 const { s3 } = require('../lib/aws')
-
-
+const { getSignedUrl } = require('@aws-sdk/cloudfront-signer')
 
 
 exports.createRecipe = async (req, res, next) => {
@@ -23,13 +22,12 @@ exports.getRecipes = async (req, res, next) => {
 
         // THEN APPEND THE IMAGE URL TO THEM
         for (let recipe of recipes) {
-            const params = {
-                Bucket: process.env.S3_BUCKET,
-                Key: `recipeImages/${recipe.image}`,
-                    }
-            // GET SIGNED URL FROM S3
-            recipe.imageUrl = await s3.getSignedUrl('getObject', params)   
-        
+            recipe.imageUrl = getSignedUrl({
+                url: `https://d2xj9s3u35k82b.cloudfront.net/${recipe.image}`,
+                dateLessThan: new Date( Date.now() + (1000 /*sec*/ * 60)),
+                privateKey: process.env.CLOUDFRONT_PRIVATE_KEY,
+                keyPairId: process.env.CLOUDFRONT_KEYPAIR_ID
+            })
         }
 
         res.json(recipes)
@@ -41,6 +39,7 @@ exports.getRecipes = async (req, res, next) => {
 exports.getOneRecipe = async(req, res, next) => {
     try {
         const recipe = await Recipe.findById(req.params.id)
+        recipe.imageUrl = `https://d2xj9s3u35k82b.cloudfront.net/${recipe.image}`
         req.recipe = recipe
         next()
         // res.json(recipe)

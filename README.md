@@ -18,7 +18,7 @@ Tech
 - Express
 - MongoDB (using Mongoose)
 - Multer / Sharp
-- AWS (S3, SignedURLs, Cloudfront CDN(...coming soon))
+- AWS (S3, SignedURLs using Public/private key, Cloudfront CDN with edge caching)
 
 <br>
 

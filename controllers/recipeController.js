@@ -39,7 +39,12 @@ exports.getRecipes = async (req, res, next) => {
 exports.getOneRecipe = async(req, res, next) => {
     try {
         const recipe = await Recipe.findById(req.params.id)
-        recipe.imageUrl = `https://d2xj9s3u35k82b.cloudfront.net/${recipe.image}`
+        recipe.imageUrl = getSignedUrl({
+            url: `https://d2xj9s3u35k82b.cloudfront.net/${recipe.image}`,
+            dateLessThan: new Date( Date.now() + (1000 /*sec*/ * 60)),
+            privateKey: process.env.CLOUDFRONT_PRIVATE_KEY,
+            keyPairId: process.env.CLOUDFRONT_KEYPAIR_ID
+        })
         req.recipe = recipe
         next()
         // res.json(recipe)
